@@ -34,6 +34,70 @@ class Camera {
     return makeViewMatrix(position, target, up);
   }
 
+  void rotateZAsix(double angle) {
+    angle = angle / 180 * math.pi;
+    var forward = (target - position);
+    forward = forward.normalized();
+    Quaternion q = Quaternion.axisAngle(forward, angle);
+
+    var ret = q.rotate(up);
+    ret = ret.normalized();
+    up.setValues(ret.x, ret.y, ret.z);
+  }
+
+  void rotateYAsix(double angle) {
+    angle = angle / 180 * math.pi;
+    var forward = (target - position);
+    var value = forward.length;
+    forward = forward.normalized();
+    var right = up.cross(forward).normalized();
+    Quaternion q = Quaternion.axisAngle(right, angle);
+
+    var ret = q.rotate(forward);
+    var newTarget = position + ret * value;
+    target.setValues(newTarget.x, newTarget.y, newTarget.z);
+
+    var newUp = q.rotate(up);
+    up.setValues(newUp.x, newUp.y, newUp.z);
+  }
+
+  void goVertical(double distance) {
+    Vector3 vec = up * distance;
+    Vector3 newPos = position + vec;
+    position.setValues(newPos.x, newPos.y, newPos.z);
+
+    var newTarget = target + vec;
+    target.setValues(newTarget.x, newTarget.y, newTarget.z);
+  }
+
+  void goHorizontal(double distance) {
+    Vector3 forward = (target - position).normalized();
+    Vector3 vec = forward.cross(up).normalized() * distance;
+    Vector3 newPos = position + vec;
+    position.setValues(newPos.x, newPos.y, newPos.z);
+
+    var newTarget = target + vec;
+    target.setValues(newTarget.x, newTarget.y, newTarget.z);
+  }
+
+  void go(double distance) {
+    Vector3 vec = (target - position).normalized();
+    Vector3 newPos = position + vec * distance;
+    position.setValues(newPos.x, newPos.y, newPos.z);
+
+    var newTarget = target + vec * distance;
+    target.setValues(newTarget.x, newTarget.y, newTarget.z);
+  }
+
+  void rotate(double angle) {
+    angle = angle / 180 * math.pi;
+    Quaternion q = Quaternion.axisAngle(up, angle);
+    var vec = target - position;
+    var ret = q.rotate(vec);
+    ret += position;
+    target.setValues(ret.x, ret.y, ret.z);
+  }
+
   Matrix4 get projectionMatrix {
     final double top = near * math.tan(radians(fov) / 2.0) / zoom;
     final double bottom = -top;
@@ -43,6 +107,15 @@ class Camera {
   }
 
   void trackBall(Vector2 from, Vector2 to, [double sensitivity = 1.0]) {
+    final double x = -(to.x - from.x) * sensitivity / (viewportWidth * 0.5);
+    final double y = (to.y - from.y) * sensitivity / (viewportHeight * 0.5);
+
+    rotateYAsix(y);
+    rotate(x);
+  }
+
+  void trackBallDeprecated(Vector2 from, Vector2 to,
+      [double sensitivity = 1.0]) {
     final double x = -(to.x - from.x) * sensitivity / (viewportWidth * 0.5);
     final double y = (to.y - from.y) * sensitivity / (viewportHeight * 0.5);
     Vector2 delta = Vector2(x, y);

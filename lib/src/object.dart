@@ -1,7 +1,10 @@
 // import 'dart:ui';
+import 'dart:ui';
+
 import 'package:vector_math/vector_math_64.dart';
 import 'scene.dart';
 import 'mesh.dart';
+import 'dart:math' as math;
 
 class Object {
   Object({
@@ -39,7 +42,11 @@ class Object {
         } else if (meshes.length > 1) {
           // multiple objects
           for (Mesh mesh in meshes) {
-            add(Object(name: mesh.name, mesh: mesh, backfaceCulling: backfaceCulling, lighting: lighting));
+            add(Object(
+                name: mesh.name,
+                mesh: mesh,
+                backfaceCulling: backfaceCulling,
+                lighting: lighting));
           }
         }
         this.scene?.objectCreated(this);
@@ -47,6 +54,37 @@ class Object {
     } else {
       this.scene?.objectCreated(this);
     }
+  }
+
+  Vector3 get center => mesh.center;
+
+  static Object fromPosition(
+    List<Vector3> positions,
+    List<(int, int, int)> indices, {
+    List<Color>? vertexColors,
+  }) {
+    final List<Polygon> polygons = <Polygon>[];
+    List<Color> colors = <Color>[];
+    for (int i = 0; i < positions.length; i++) {
+      var pos = positions[i];
+      if (vertexColors == null) {
+        colors.add(Color.fromARGB(
+          (math.Random(pos.x.toInt()).nextDouble() * 255).toInt(),
+          (math.Random(pos.y.toInt()).nextDouble() * 255).toInt(),
+          (math.Random(pos.z.toInt()).nextDouble() * 255).toInt(),
+          255,
+        ));
+      }
+    }
+    for (var (i, j, k) in indices) {
+      polygons.add(Polygon(i, j, k));
+    }
+
+    if (vertexColors != null) {
+      colors = vertexColors;
+    }
+    return Object(
+        mesh: Mesh(vertices: positions, indices: polygons, colors: colors));
   }
 
   /// The local position of this object relative to the parent. Default is Vector3(0.0, 0.0, 0.0). updateTransform after you change the value.
@@ -93,7 +131,11 @@ class Object {
   final Matrix4 transform = Matrix4.identity();
 
   void updateTransform() {
-    final Matrix4 m = Matrix4.compose(position, Quaternion.euler(radians(rotation.y), radians(rotation.x), radians(rotation.z)), scale);
+    final Matrix4 m = Matrix4.compose(
+        position,
+        Quaternion.euler(
+            radians(rotation.y), radians(rotation.x), radians(rotation.z)),
+        scale);
     transform.setFrom(m);
   }
 
@@ -113,7 +155,9 @@ class Object {
   /// Find a child matching the name
   Object? find(Pattern name) {
     for (Object child in children) {
-      if (child.name != null && (name as RegExp).hasMatch(child.name!)) return child;
+      if (child.name != null && (name as RegExp).hasMatch(child.name!)) {
+        return child;
+      }
       final Object? result = child.find(name);
       if (result != null) return result;
     }

@@ -1,0 +1,2 @@
+const int WIDGET_FLAG_HIERARCHY = 0;
+const int WIDGET_FLAG_INSPECTOR = 1;
