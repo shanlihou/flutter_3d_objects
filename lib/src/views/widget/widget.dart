@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_3d_objects/src/common/const.dart';
@@ -144,13 +145,31 @@ class _CubeState extends State<Cube> with EventMixin {
                       size: Size(constraints.maxWidth, constraints.maxHeight),
                     );
                     return widget.interactive
-                        ? GestureDetector(
-                            onScaleStart: handleScaleStart,
-                            onScaleUpdate: (details) {
-                              handleScaleUpdate(details, scene);
+                        ? Listener(
+                            onPointerSignal: (event) {
+                              if (event is PointerScrollEvent) {
+                                handlerPointerScroll(event, scene);
+                                setState(() {});
+                              }
+                            },
+                            onPointerDown: (event) {
+                              _focusNode.requestFocus();
+                              handleScaleStart(event.position);
+                            },
+                            onPointerUp: (event) {
+                              handleScaleUpdate(event.position, scene);
                               setState(() {});
                             },
-                            onTapDown: (_) => _focusNode.requestFocus(),
+                            onPointerMove: (event) {
+                              handleScaleUpdate(event.position, scene);
+                              setState(() {});
+                            },
+                            // onScaleStart: handleScaleStart,
+                            // onScaleUpdate: (details) {
+                            //   handleScaleUpdate(details, scene);
+                            //   setState(() {});
+                            // },
+                            // onTapDown: (_) => _focusNode.requestFocus(),
                             child: customPaint,
                           )
                         : customPaint;
@@ -176,6 +195,7 @@ class _CubeState extends State<Cube> with EventMixin {
                     if (coordinate != null) {
                       coordinate.position.setFrom(obj.position);
                       coordinate.updateTransform();
+                      setState(() {});
                     }
                   },
                 ),

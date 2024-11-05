@@ -74,6 +74,25 @@ class Scene {
     return _resetObjByName(name, obj, world);
   }
 
+  bool _removeObjByName(String name, Object parent) {
+    for (int i = 0; i < parent.children.length; i++) {
+      final Object child = parent.children[i];
+      if (child.name == name) {
+        parent.children.removeAt(i);
+        return true;
+      }
+
+      if (_removeObjByName(name, child)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  bool removeObjByName(String name) {
+    return _removeObjByName(name, world);
+  }
+
   bool _resetObjPosition(String name, Vector3 position, Object parent) {
     if (parent.name == name) {
       parent.position.setFrom(position);

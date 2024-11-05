@@ -139,6 +139,12 @@ class Object {
     transform.setFrom(m);
   }
 
+  void updateTransformByVector(Vector3 from, Vector3 to) {
+    final Matrix4 m =
+        Matrix4.compose(position, Quaternion.fromTwoVectors(from, to), scale);
+    transform.setFrom(m);
+  }
+
   /// Add a child
   void add(Object object) {
     assert(object != this);

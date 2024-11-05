@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -8,15 +9,14 @@ mixin EventMixin {
   late Offset _lastFocalPoint;
   // double? _lastZoom;
 
-  void handleScaleStart(ScaleStartDetails details) {
-    _lastFocalPoint = details.localFocalPoint;
+  void handleScaleStart(Offset position) {
+    _lastFocalPoint = position;
     // _lastZoom = null;
   }
 
-  void handleScaleUpdate(ScaleUpdateDetails details, Scene scene) {
-    scene.camera.trackBall(
-        toVector2(_lastFocalPoint), toVector2(details.localFocalPoint), 30);
-    _lastFocalPoint = details.localFocalPoint;
+  void handleScaleUpdate(Offset position, Scene scene) {
+    scene.camera.trackBall(toVector2(_lastFocalPoint), toVector2(position), 30);
+    _lastFocalPoint = position;
     // if (widget.zoom) {
     //   if (_lastZoom == null) {
     //     _lastZoom = scene.camera.zoom;
@@ -26,8 +26,11 @@ mixin EventMixin {
     //}
   }
 
+  void handlerPointerScroll(PointerScrollEvent event, Scene scene) {
+    scene.camera.goVertical(event.scrollDelta.dy / 100);
+  }
+
   void handleCameraKeyEvent(KeyEvent event, Scene scene) {
-    print('camera key event: ${event.logicalKey}');
     if (event.logicalKey == LogicalKeyboardKey.keyD) {
       scene.camera.goHorizontal(1);
     } else if (event.logicalKey == LogicalKeyboardKey.keyA) {
